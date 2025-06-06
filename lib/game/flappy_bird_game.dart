@@ -94,7 +94,7 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     children.whereType<PipePair>().toList().forEach(remove);
     children
         .whereType<TextComponent>()
-        .where((t) => t.text.comtains('Game Over'))
+        .where((t) => t.text.contains('Game Over'))
         .toList()
         .forEach(remove);
   }
