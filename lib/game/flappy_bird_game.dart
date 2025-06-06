@@ -11,29 +11,35 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   late TextComponent scoreText;
   int score = 0;
   bool isGameOver = false;
-  double pipeInterval = 2.0;
+
+  final double gravity = 400;
+  final double jumpForce = -200;
+
+  double pipeInterval = 2.3;
   double timeSinceLastPipe = 0.0;
-  final double gravity = 9.8;
-  final double jumpForce = -5.0;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    final parallax = await ParallaxComponent.load(
-      [ParallaxImageData('background.jpg')],
-      baseVelocity: Vector2(20, 0),
+
+    final parallax = await loadParallaxComponent(
+      [
+        ParallaxImageData('background.jpg'),
+      ],
+      baseVelocity: Vector2(40, 0),
       repeat: ImageRepeat.repeat,
     );
-    add(parallax as Component);
+    add(parallax);
 
     bird = Bird();
     add(bird);
 
     scoreText = TextComponent(
       text: 'Score: 0',
-      position: Vector2(size.x / 2, 50),
-      anchor: Anchor.center,
+      position: Vector2(size.x / 2, 30),
+      anchor: Anchor.topCenter,
+      priority: 1,
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Colors.white,
@@ -47,7 +53,6 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
 
   @override
   void onTap() {
-    super.onTap();
     if (isGameOver) {
       resetGame();
     } else {
@@ -81,6 +86,7 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   }
 
   void gameOver() {
+    if (isGameOver) return;
     isGameOver = true;
     bird.velocity.y = 0;
 
@@ -88,6 +94,7 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
       text: 'Game Over!\nTap to restart',
       position: size / 2,
       anchor: Anchor.center,
+      priority: 1,
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Colors.white,
@@ -100,12 +107,15 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   }
 
   void resetGame() {
+    // Clear previous state
     score = 0;
     isGameOver = false;
     scoreText.text = 'Score: 0';
-    bird.position = Vector2(size.x / 4, size.y / 2);
-    bird.velocity = Vector2(0, 0);
 
+    bird.position = Vector2(size.x / 4, size.y / 2);
+    bird.velocity = Vector2.zero();
+
+    // Remove pipes and game over text
     children.whereType<PipePair>().toList().forEach(remove);
     children
         .whereType<TextComponent>()

@@ -75,8 +75,9 @@ class Pipe extends SpriteComponent with CollisionCallbacks {
       isTop ? 'pipe_top.png' : 'pipe_bottom.png',
     );
     anchor = Anchor.topLeft;
-    add(RectangleHitbox());
-  }
+    add(RectangleHitbox()
+      ..collisionType = CollisionType.passive
+      ..anchor = Anchor.topLeft);  }
 }
 
 class ScoreZone extends PositionComponent with CollisionCallbacks {
