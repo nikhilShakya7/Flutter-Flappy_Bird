@@ -90,14 +90,24 @@ class ScoreZone extends PositionComponent with CollisionCallbacks {
   });
 
   @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    add(RectangleHitbox()..collisionType = CollisionType.passive);
+  }
+
+  @override
   void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
+      Set<Vector2> intersectionPoints,
+      PositionComponent other,
+      ) {
     super.onCollisionStart(intersectionPoints, other);
-    if (other is Bird) {
+
+    if (!gameRef.isGameOver && other is Bird) {
       gameRef.increaseScore();
-      removeFromParent();
+      removeFromParent(); // Prevent multiple scoring from same zone
     }
   }
 }
+
+

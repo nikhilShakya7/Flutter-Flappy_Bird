@@ -90,6 +90,8 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     isGameOver = true;
     bird.velocity.y = 0;
 
+    pauseEngine(); // ⛔️ Freeze the game
+
     final gameOverText = TextComponent(
       text: 'Game Over!\nTap to restart',
       position: size / 2,
@@ -104,10 +106,11 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
       ),
     );
     add(gameOverText);
+
   }
 
+
   void resetGame() {
-    // Clear previous state
     score = 0;
     isGameOver = false;
     scoreText.text = 'Score: 0';
@@ -115,12 +118,16 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     bird.position = Vector2(size.x / 4, size.y / 2);
     bird.velocity = Vector2.zero();
 
-    // Remove pipes and game over text
+
     children.whereType<PipePair>().toList().forEach(remove);
     children
         .whereType<TextComponent>()
         .where((t) => t.text.contains('Game Over'))
         .toList()
         .forEach(remove);
+
+
+    resumeEngine();
   }
+
 }
