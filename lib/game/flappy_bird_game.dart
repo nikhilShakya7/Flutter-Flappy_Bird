@@ -1,14 +1,14 @@
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
-import 'package:flame/parallax.dart';
 import 'package:flame/input.dart';
+import 'package:flame/parallax.dart';
+import 'package:flappy_bird/game/components/bird.dart';
+import 'package:flappy_bird/game/components/pipe.dart';
 import 'package:flutter/material.dart';
 
 class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   late Bird bird;
   late TextComponent scoreText;
-  late ParallaxComponent parallax;
   int score = 0;
   bool isGameOver = false;
   double pipeInterval = 2.0;
@@ -19,14 +19,17 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    final parallax = await loadParallax(
-      [ParallaxImageData('background.png')],
+
+    final parallax = await ParallaxComponent.load(
+      [ParallaxImageData('background.jpg')],
       baseVelocity: Vector2(20, 0),
       repeat: ImageRepeat.repeat,
     );
-    add(parallax);
+    add(parallax as Component);
+
     bird = Bird();
     add(bird);
+
     scoreText = TextComponent(
       text: 'Score: 0',
       position: Vector2(size.x / 2, 50),
@@ -55,14 +58,18 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   @override
   void update(double dt) {
     super.update(dt);
+
     if (isGameOver) return;
+
     bird.velocity.y += gravity * dt;
     bird.position += bird.velocity * dt;
+
     timeSinceLastPipe += dt;
     if (timeSinceLastPipe > pipeInterval) {
       timeSinceLastPipe = 0;
-      add(pipePair());
+      add(PipePair());
     }
+
     if (bird.position.y > size.y || bird.position.y < 0) {
       gameOver();
     }
@@ -70,9 +77,15 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
 
   void increaseScore() {
     score++;
-    scoreText.text = 'Score:$score';
+    scoreText.text = 'Score: $score';
+  }
+
+  void gameOver() {
+    isGameOver = true;
+    bird.velocity.y = 0;
+
     final gameOverText = TextComponent(
-      text: 'Game Over!!/n Tap to restart',
+      text: 'Game Over!\nTap to restart',
       position: size / 2,
       anchor: Anchor.center,
       textRenderer: TextPaint(
@@ -83,14 +96,16 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
         ),
       ),
     );
+    add(gameOverText);
   }
 
   void resetGame() {
     score = 0;
     isGameOver = false;
-    scoreText.text = 'Score:$score';
+    scoreText.text = 'Score: 0';
     bird.position = Vector2(size.x / 4, size.y / 2);
     bird.velocity = Vector2(0, 0);
+
     children.whereType<PipePair>().toList().forEach(remove);
     children
         .whereType<TextComponent>()
