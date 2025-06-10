@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flame/parallax.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flappy_bird/game/components/bird.dart';
 import 'package:flappy_bird/game/components/pipe.dart';
 import 'package:flutter/material.dart';
@@ -21,12 +22,10 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-
+    await FlameAudio.audioCache.loadAll(['fly.mp3', 'dead.mp3']);
 
     final parallax = await loadParallaxComponent(
-      [
-        ParallaxImageData('background.jpg'),
-      ],
+      [ParallaxImageData('background.jpg')],
       baseVelocity: Vector2(40, 0),
       repeat: ImageRepeat.repeat,
     );
@@ -57,6 +56,7 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
       resetGame();
     } else {
       bird.velocity.y = jumpForce;
+      FlameAudio.play('fly.mp3');
     }
   }
 
@@ -89,26 +89,10 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     if (isGameOver) return;
     isGameOver = true;
     bird.velocity.y = 0;
+    FlameAudio.play('dead.mp3');
 
-    pauseEngine(); // ⛔️ Freeze the game
-
-    final gameOverText = TextComponent(
-      text: 'Game Over!\nTap to restart',
-      position: size / 2,
-      anchor: Anchor.center,
-      priority: 1,
-      textRenderer: TextPaint(
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-    add(gameOverText);
-
+    pauseEngine();
   }
-
 
   void resetGame() {
     score = 0;
@@ -118,7 +102,6 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
     bird.position = Vector2(size.x / 4, size.y / 2);
     bird.velocity = Vector2.zero();
 
-
     children.whereType<PipePair>().toList().forEach(remove);
     children
         .whereType<TextComponent>()
@@ -126,8 +109,6 @@ class FlappyBirdGame extends FlameGame with TapDetector, HasCollisionDetection {
         .toList()
         .forEach(remove);
 
-
     resumeEngine();
   }
-
 }
